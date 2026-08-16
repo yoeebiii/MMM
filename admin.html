@@ -1,0 +1,2274 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1.0"
+>
+
+<title>MMM · Admin</title>
+
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+html,
+body{
+  margin:0;
+  padding:0;
+  min-height:100%;
+  background:#f5f5f5;
+  color:#222;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Pretendard",
+    "Noto Sans KR",
+    sans-serif;
+}
+
+header{
+  padding:20px;
+  background:#222;
+  color:white;
+}
+
+header h1{
+  margin:0;
+  font-size:20px;
+}
+
+header p{
+  margin:5px 0 0;
+  opacity:.7;
+  font-size:12px;
+}
+
+.container{
+  width:min(1200px,94%);
+  margin:25px auto 50px;
+}
+
+.login-box,
+.panel{
+  background:white;
+  border-radius:18px;
+  padding:22px;
+  box-shadow:0 5px 20px rgba(0,0,0,.08);
+}
+
+.login-box{
+  max-width:420px;
+  margin:60px auto;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  margin-bottom:10px;
+  border:1px solid #ddd;
+  border-radius:10px;
+  font-family:inherit;
+  outline:none;
+}
+
+input:focus{
+  border-color:#222;
+}
+
+button{
+  border:none;
+  border-radius:10px;
+  padding:11px 15px;
+  font-family:inherit;
+  font-weight:700;
+  cursor:pointer;
+}
+
+button:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+.login-button{
+  width:100%;
+  background:#222;
+  color:white;
+}
+
+.logout{
+  background:#eee;
+}
+
+.hidden{
+  display:none!important;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.topbar-title{
+  font-size:16px;
+  font-weight:800;
+}
+
+.topbar-sub{
+  margin-top:5px;
+  color:#888;
+  font-size:11px;
+}
+
+.search{
+  display:flex;
+  gap:8px;
+  margin-bottom:20px;
+}
+
+.search input{
+  margin:0;
+  flex:1;
+}
+
+.search button{
+  background:#222;
+  color:white;
+}
+
+.clear-button{
+  background:#eee!important;
+  color:#222!important;
+}
+
+.layout{
+  display:grid;
+  grid-template-columns:420px 1fr;
+  gap:20px;
+  align-items:start;
+}
+
+.memory-panel{
+  min-height:500px;
+}
+
+.map-panel{
+  position:sticky;
+  top:20px;
+  padding:0;
+  overflow:hidden;
+}
+
+#adminMap{
+  width:100%;
+  height:650px;
+  border-radius:18px;
+}
+
+.memory{
+  padding:18px 0;
+  border-bottom:1px solid #eee;
+}
+
+.memory:first-child{
+  padding-top:0;
+}
+
+.memory:last-child{
+  border-bottom:0;
+}
+
+.memory-title{
+  font-size:17px;
+  font-weight:800;
+  line-height:1.4;
+}
+
+.meta{
+  margin-top:5px;
+  color:#777;
+  font-size:12px;
+  line-height:1.5;
+}
+
+.author{
+  margin-top:10px;
+  padding:9px 10px;
+  background:#fff4d6;
+  border-radius:8px;
+  font-size:12px;
+}
+
+.memo{
+  margin-top:10px;
+  white-space:pre-wrap;
+  line-height:1.5;
+  font-size:13px;
+}
+
+.memory-comments-title{
+  margin-top:15px;
+  font-size:13px;
+  font-weight:800;
+}
+
+.comment{
+  margin-top:9px;
+  padding:12px;
+  background:#f7f7f7;
+  border-radius:10px;
+}
+
+.comment-name{
+  font-size:12px;
+  font-weight:800;
+}
+
+.comment-text{
+  margin-top:5px;
+  font-size:13px;
+  line-height:1.5;
+  white-space:pre-wrap;
+}
+
+.comment-id{
+  margin-top:5px;
+  color:#aaa;
+  font-size:9px;
+}
+
+.actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:12px;
+}
+
+.delete{
+  background:#d93025;
+  color:white;
+}
+
+.map-link{
+  background:#eee;
+}
+
+.focus-map{
+  background:#222;
+  color:white;
+}
+
+.play{
+  background:#eee;
+}
+
+.empty{
+  padding:30px;
+  text-align:center;
+  color:#999;
+}
+
+.error{
+  margin-top:10px;
+  color:#d93025;
+  font-size:12px;
+  line-height:1.5;
+}
+
+.success{
+  margin-top:10px;
+  color:#278a4b;
+  font-size:12px;
+}
+
+.stats{
+  display:flex;
+  gap:8px;
+  margin-bottom:15px;
+  flex-wrap:wrap;
+}
+
+.stat{
+  padding:8px 12px;
+  background:#f5f5f5;
+  border-radius:10px;
+  font-size:11px;
+  color:#666;
+}
+
+.stat strong{
+  color:#222;
+}
+
+.map-popup{
+  min-width:190px;
+}
+
+.map-popup-title{
+  font-weight:800;
+  font-size:14px;
+}
+
+.map-popup-author{
+  margin-top:5px;
+  color:#777;
+  font-size:11px;
+}
+
+.map-popup-memo{
+  margin-top:8px;
+  font-size:12px;
+  line-height:1.4;
+}
+
+.map-popup-comments{
+  margin-top:8px;
+  color:#777;
+  font-size:11px;
+}
+
+.login-info{
+  margin-top:15px;
+  color:#888;
+  font-size:11px;
+  line-height:1.5;
+}
+
+.loading{
+  padding:30px;
+  text-align:center;
+  color:#888;
+}
+
+@media(max-width:900px){
+
+  .layout{
+    grid-template-columns:1fr;
+  }
+
+  .map-panel{
+    position:relative;
+    top:auto;
+    order:-1;
+  }
+
+  #adminMap{
+    height:420px;
+  }
+
+}
+
+@media(max-width:600px){
+
+  .container{
+    width:94%;
+  }
+
+  .topbar{
+    align-items:flex-start;
+  }
+
+  .search{
+    flex-wrap:wrap;
+  }
+
+  .search input{
+    width:100%;
+    flex-basis:100%;
+  }
+
+  .search button{
+    flex:1;
+  }
+
+  #adminMap{
+    height:350px;
+  }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>MMM · ADMIN</h1>
+
+<p>관리자 전용 관리 페이지</p>
+
+</header>
+
+
+<div class="container">
+
+
+<!-- =====================================================
+     로그인
+===================================================== -->
+
+<div
+  class="login-box"
+  id="loginBox"
+>
+
+<h2>관리자 로그인</h2>
+
+<input
+  id="email"
+  type="email"
+  autocomplete="username"
+  placeholder="관리자 이메일"
+/>
+
+<input
+  id="password"
+  type="password"
+  autocomplete="current-password"
+  placeholder="관리자 비밀번호"
+/>
+
+<button
+  class="login-button"
+  id="loginButton"
+>
+로그인
+</button>
+
+<div
+  class="error"
+  id="loginError"
+></div>
+
+<div class="login-info">
+
+Firebase Authentication에서 만든
+관리자 이메일과 비밀번호를 사용하세요.
+
+<br><br>
+
+로그인 상태는 이 브라우저에 유지됩니다.
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     관리자
+===================================================== -->
+
+<div
+  class="hidden"
+  id="adminPanel"
+>
+
+<div class="topbar">
+
+<div>
+
+<div class="topbar-title">
+관리자 페이지
+</div>
+
+<div class="topbar-sub">
+작성자 이름과 댓글 작성자 이름은 관리자에게만 표시됩니다.
+</div>
+
+</div>
+
+<button
+  class="logout"
+  id="logoutButton"
+>
+로그아웃
+</button>
+
+</div>
+
+
+<div class="stats">
+
+<div class="stat">
+기억 <strong id="memoryCount">0</strong>
+</div>
+
+<div class="stat">
+댓글 <strong id="commentCount">0</strong>
+</div>
+
+</div>
+
+
+<div class="search">
+
+<input
+  id="searchInput"
+  placeholder="노래, 가수, 메모, 작성자, 댓글 검색"
+/>
+
+<button
+  id="searchButton"
+>
+검색
+</button>
+
+<button
+  class="clear-button"
+  id="clearSearchButton"
+>
+전체
+</button>
+
+</div>
+
+
+<div class="layout">
+
+
+<!-- =====================================================
+     목록
+===================================================== -->
+
+<div class="panel memory-panel">
+
+<h3
+  style="margin-top:0"
+>
+기억 / 댓글 목록
+</h3>
+
+<div
+  id="memoryList"
+>
+
+<div class="loading">
+불러오는 중...
+</div>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     관리자 지도
+===================================================== -->
+
+<div class="panel map-panel">
+
+<div
+  id="adminMap"
+></div>
+
+</div>
+
+
+</div>
+
+</div>
+
+</div>
+
+
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+></script>
+
+
+<script type="module">
+
+/* =====================================================
+   Firebase
+===================================================== */
+
+import {
+  initializeApp
+}
+from
+"https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+
+
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut,
+  setPersistence,
+  browserLocalPersistence
+}
+from
+"https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+
+
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  deleteDoc,
+  doc
+}
+from
+"https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
+
+/* =====================================================
+   Firebase 설정
+===================================================== */
+
+const firebaseConfig = {
+
+  apiKey:
+    "AIzaSyDeoX6FS2tEjcDvJ_5gi_jnKkdk4H0TJa4",
+
+  authDomain:
+    "map-of-music.firebaseapp.com",
+
+  projectId:
+    "map-of-music",
+
+  storageBucket:
+    "map-of-music.firebasestorage.app",
+
+  messagingSenderId:
+    "1013897221514",
+
+  appId:
+    "1:1013897221514:web:65274751a589b87897e473"
+
+};
+
+
+const app =
+  initializeApp(
+    firebaseConfig
+  );
+
+
+const auth =
+  getAuth(app);
+
+
+const db =
+  getFirestore(app);
+
+
+/* =====================================================
+   Firebase 로그인 상태를 브라우저에 유지
+===================================================== */
+
+await setPersistence(
+  auth,
+  browserLocalPersistence
+);
+
+
+/* =====================================================
+   변수
+===================================================== */
+
+let memories = [];
+
+let privateMemories = [];
+
+let comments = [];
+
+let mapMarkers = {};
+
+let currentSearch = "";
+
+
+/* =====================================================
+   관리자 지도
+===================================================== */
+
+const adminMap =
+  L.map(
+    "adminMap"
+  );
+
+
+L.tileLayer(
+  "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+  {
+
+    maxZoom:19,
+
+    attribution:
+      "&copy; OpenStreetMap contributors"
+
+  }
+)
+.addTo(
+  adminMap
+);
+
+
+adminMap.setView(
+  [35.8714,128.6014],
+  13
+);
+
+
+/* =====================================================
+   로그인 상태
+===================================================== */
+
+onAuthStateChanged(
+  auth,
+  user => {
+
+    const loginBox =
+      document.getElementById(
+        "loginBox"
+      );
+
+    const adminPanel =
+      document.getElementById(
+        "adminPanel"
+      );
+
+
+    if(user){
+
+      loginBox
+        .classList
+        .add("hidden");
+
+      adminPanel
+        .classList
+        .remove("hidden");
+
+
+      setTimeout(
+        () => {
+
+          adminMap.invalidateSize();
+
+        },
+        100
+      );
+
+
+      loadAll();
+
+    }
+    else{
+
+      loginBox
+        .classList
+        .remove("hidden");
+
+      adminPanel
+        .classList
+        .add("hidden");
+
+    }
+
+  }
+);
+
+
+/* =====================================================
+   로그인
+===================================================== */
+
+document
+  .getElementById(
+    "loginButton"
+  )
+  .addEventListener(
+    "click",
+    login
+  );
+
+
+document
+  .getElementById(
+    "password"
+  )
+  .addEventListener(
+    "keydown",
+    event => {
+
+      if(
+        event.key === "Enter"
+      ){
+
+        login();
+
+      }
+
+    }
+  );
+
+
+async function login(){
+
+  const email =
+    document
+      .getElementById(
+        "email"
+      )
+      .value
+      .trim();
+
+
+  const password =
+    document
+      .getElementById(
+        "password"
+      )
+      .value;
+
+
+  const error =
+    document
+      .getElementById(
+        "loginError"
+      );
+
+
+  error.textContent =
+    "";
+
+
+  if(
+    !email ||
+    !password
+  ){
+
+    error.textContent =
+      "관리자 이메일과 비밀번호를 입력해주세요.";
+
+    return;
+
+  }
+
+
+  const button =
+    document
+      .getElementById(
+        "loginButton"
+      );
+
+
+  button.disabled =
+    true;
+
+  button.textContent =
+    "로그인 중...";
+
+
+  try{
+
+    await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+
+  }
+  catch(errorObject){
+
+    console.error(
+      errorObject
+    );
+
+
+    if(
+      errorObject.code ===
+      "auth/invalid-credential"
+    ){
+
+      error.textContent =
+        "이메일 또는 비밀번호가 올바르지 않습니다.";
+
+    }
+    else if(
+      errorObject.code ===
+      "auth/user-not-found"
+    ){
+
+      error.textContent =
+        "등록된 관리자 계정이 없습니다.";
+
+    }
+    else if(
+      errorObject.code ===
+      "auth/too-many-requests"
+    ){
+
+      error.textContent =
+        "로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.";
+
+    }
+    else{
+
+      error.textContent =
+        "로그인 오류: " +
+        errorObject.message;
+
+    }
+
+  }
+  finally{
+
+    button.disabled =
+      false;
+
+    button.textContent =
+      "로그인";
+
+  }
+
+}
+
+
+/* =====================================================
+   로그아웃
+===================================================== */
+
+document
+  .getElementById(
+    "logoutButton"
+  )
+  .addEventListener(
+    "click",
+    async () => {
+
+      await signOut(
+        auth
+      );
+
+      document
+        .getElementById(
+          "password"
+        )
+        .value = "";
+
+    }
+  );
+
+
+/* =====================================================
+   전체 데이터 가져오기
+===================================================== */
+
+async function loadAll(){
+
+  const list =
+    document.getElementById(
+      "memoryList"
+    );
+
+
+  list.innerHTML =
+    `
+      <div class="loading">
+        데이터를 불러오는 중...
+      </div>
+    `;
+
+
+  try{
+
+    /* -----------------------------------------------
+       memories
+    ----------------------------------------------- */
+
+    const memorySnapshot =
+      await getDocs(
+        collection(
+          db,
+          "memories"
+        )
+      );
+
+
+    memories = [];
+
+
+    memorySnapshot.forEach(
+      item => {
+
+        memories.push({
+
+          id:
+            item.id,
+
+          ...item.data()
+
+        });
+
+      }
+    );
+
+
+    /* -----------------------------------------------
+       관리자용 작성자 정보
+    ----------------------------------------------- */
+
+    const privateSnapshot =
+      await getDocs(
+        collection(
+          db,
+          "memoryPrivate"
+        )
+      );
+
+
+    privateMemories = [];
+
+
+    privateSnapshot.forEach(
+      item => {
+
+        privateMemories.push({
+
+          id:
+            item.id,
+
+          ...item.data()
+
+        });
+
+      }
+    );
+
+
+    /* -----------------------------------------------
+       관리자용 댓글
+    ----------------------------------------------- */
+
+    const commentSnapshot =
+      await getDocs(
+        collection(
+          db,
+          "commentPrivate"
+        )
+      );
+
+
+    comments = [];
+
+
+    commentSnapshot.forEach(
+      item => {
+
+        comments.push({
+
+          id:
+            item.id,
+
+          ...item.data()
+
+        });
+
+      }
+    );
+
+
+    updateStats();
+
+    renderMap();
+
+    renderMemories(
+      memories
+    );
+
+  }
+  catch(error){
+
+    console.error(
+      error
+    );
+
+
+    list.innerHTML =
+      `
+        <div class="empty">
+          데이터를 불러오지 못했습니다.
+          <br><br>
+          ${escapeHTML(
+            error.message
+          )}
+        </div>
+      `;
+
+  }
+
+}
+
+
+/* =====================================================
+   통계
+===================================================== */
+
+function updateStats(){
+
+  document
+    .getElementById(
+      "memoryCount"
+    )
+    .textContent =
+    memories.length;
+
+
+  document
+    .getElementById(
+      "commentCount"
+    )
+    .textContent =
+    comments.length;
+
+}
+
+
+/* =====================================================
+   작성자
+===================================================== */
+
+function getAuthorName(
+  memoryId
+){
+
+  const item =
+    privateMemories.find(
+      x =>
+        x.memoryId === memoryId
+    );
+
+
+  if(
+    item &&
+    item.authorName
+  ){
+
+    return item.authorName;
+
+  }
+
+
+  return "이름 없음";
+
+}
+
+
+/* =====================================================
+   댓글
+===================================================== */
+
+function getComments(
+  memoryId
+){
+
+  return comments.filter(
+    x =>
+      x.memoryId === memoryId
+  );
+
+}
+
+
+/* =====================================================
+   지도 마커 전체 표시
+===================================================== */
+
+function renderMap(){
+
+  Object
+    .values(
+      mapMarkers
+    )
+    .forEach(
+      marker => {
+
+        adminMap.removeLayer(
+          marker
+        );
+
+      }
+    );
+
+
+  mapMarkers = {};
+
+
+  if(
+    memories.length === 0
+  ){
+
+    return;
+
+  }
+
+
+  const bounds = [];
+
+
+  memories.forEach(
+    memory => {
+
+      const lat =
+        Number(
+          memory.lat
+        );
+
+
+      const lng =
+        Number(
+          memory.lng
+        );
+
+
+      if(
+        !Number.isFinite(lat) ||
+        !Number.isFinite(lng)
+      ){
+
+        return;
+
+      }
+
+
+      const marker =
+        L.marker([
+          lat,
+          lng
+        ])
+        .addTo(
+          adminMap
+        );
+
+
+      mapMarkers[
+        memory.id
+      ] =
+        marker;
+
+
+      const memoryComments =
+        getComments(
+          memory.id
+        );
+
+
+      const author =
+        getAuthorName(
+          memory.id
+        );
+
+
+      marker.bindPopup(
+        `
+          <div class="map-popup">
+
+            <div class="map-popup-title">
+              🎵 ${escapeHTML(
+                memory.song ||
+                "노래 없음"
+              )}
+            </div>
+
+            <div class="map-popup-author">
+              👤 ${escapeHTML(
+                author
+              )}
+            </div>
+
+            ${
+              memory.memo
+              ?
+              `
+                <div class="map-popup-memo">
+                  ${escapeHTML(
+                    memory.memo
+                  )}
+                </div>
+              `
+              :
+              ""
+            }
+
+            <div class="map-popup-comments">
+              💬 댓글 ${memoryComments.length}개
+            </div>
+
+          </div>
+        `
+      );
+
+
+      bounds.push([
+        lat,
+        lng
+      ]);
+
+    }
+  );
+
+
+  if(
+    bounds.length === 1
+  ){
+
+    adminMap.setView(
+      bounds[0],
+      15
+    );
+
+  }
+  else if(
+    bounds.length > 1
+  ){
+
+    adminMap.fitBounds(
+      bounds,
+      {
+        padding:[
+          40,
+          40
+        ]
+      }
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   기억 목록
+===================================================== */
+
+function renderMemories(
+  data
+){
+
+  const list =
+    document.getElementById(
+      "memoryList"
+    );
+
+
+  list.innerHTML =
+    "";
+
+
+  if(
+    data.length === 0
+  ){
+
+    list.innerHTML =
+      `
+        <div class="empty">
+          검색 결과가 없습니다.
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  data.forEach(
+    memory => {
+
+      const wrapper =
+        document.createElement(
+          "div"
+        );
+
+
+      wrapper.className =
+        "memory";
+
+
+      const memoryComments =
+        getComments(
+          memory.id
+        );
+
+
+      const author =
+        getAuthorName(
+          memory.id
+        );
+
+
+      const lat =
+        Number(
+          memory.lat
+        );
+
+
+      const lng =
+        Number(
+          memory.lng
+        );
+
+
+      wrapper.innerHTML =
+        `
+
+          <div class="memory-title">
+            🎵 ${escapeHTML(
+              memory.song ||
+              "노래 없음"
+            )}
+          </div>
+
+
+          <div class="meta">
+            ${escapeHTML(
+              memory.artist ||
+              ""
+            )}
+          </div>
+
+
+          <div class="author">
+            👤 작성자:
+            <strong>
+              ${escapeHTML(
+                author
+              )}
+            </strong>
+          </div>
+
+
+          <div class="meta">
+            📍
+            ${
+              Number.isFinite(lat)
+              ?
+              lat.toFixed(5)
+              :
+              "-"
+            },
+            ${
+              Number.isFinite(lng)
+              ?
+              lng.toFixed(5)
+              :
+              "-"
+            }
+          </div>
+
+
+          ${
+            memory.memo
+            ?
+            `
+              <div class="memo">
+                ${escapeHTML(
+                  memory.memo
+                )}
+              </div>
+            `
+            :
+            ""
+          }
+
+
+          <div class="memory-comments-title">
+            💬 댓글 ${memoryComments.length}개
+          </div>
+
+
+          <div>
+
+            ${
+              memoryComments.length > 0
+
+              ?
+
+              memoryComments
+                .map(
+                  comment => {
+
+                    return `
+
+                      <div class="comment">
+
+                        <div class="comment-name">
+                          👤 ${escapeHTML(
+                            comment.authorName ||
+                            "이름 없음"
+                          )}
+                        </div>
+
+                        <div class="comment-text">
+                          ${escapeHTML(
+                            comment.text ||
+                            ""
+                          )}
+                        </div>
+
+                        ${
+                          comment.commentId
+                          ?
+                          `
+                            <div class="comment-id">
+                              댓글 ID:
+                              ${escapeHTML(
+                                comment.commentId
+                              )}
+                            </div>
+                          `
+                          :
+                          ""
+                        }
+
+                        <div
+                          style="margin-top:8px"
+                        >
+
+                          <button
+                            class="delete"
+                            data-delete-comment="${escapeAttribute(
+                              comment.id
+                            )}"
+                            data-memory-id="${escapeAttribute(
+                              memory.id
+                            )}"
+                          >
+                            🗑 댓글 삭제
+                          </button>
+
+                        </div>
+
+                      </div>
+
+                    `;
+
+                  }
+                )
+                .join("")
+
+              :
+
+              `
+                <div
+                  style="
+                    color:#999;
+                    font-size:12px;
+                    margin-top:8px;
+                  "
+                >
+                  댓글 없음
+                </div>
+              `
+
+            }
+
+          </div>
+
+
+          <div class="actions">
+
+            <button
+              class="focus-map"
+              data-focus-id="${escapeAttribute(
+                memory.id
+              )}"
+            >
+              📍 지도에서 보기
+            </button>
+
+
+            ${
+              memory.youtube
+              ?
+              `
+                <a
+                  class="map-link"
+                  style="
+                    text-decoration:none;
+                    display:inline-flex;
+                    align-items:center;
+                  "
+                  href="${escapeAttribute(
+                    memory.youtube
+                  )}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  ▶ YouTube
+                </a>
+              `
+              :
+              ""
+            }
+
+
+            <button
+              class="delete"
+              data-delete-memory="${escapeAttribute(
+                memory.id
+              )}"
+            >
+              🗑 기억 삭제
+            </button>
+
+          </div>
+
+        `;
+
+
+      list.appendChild(
+        wrapper
+      );
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   검색
+===================================================== */
+
+document
+  .getElementById(
+    "searchButton"
+  )
+  .addEventListener(
+    "click",
+    search
+  );
+
+
+document
+  .getElementById(
+    "clearSearchButton"
+  )
+  .addEventListener(
+    "click",
+    () => {
+
+      document
+        .getElementById(
+          "searchInput"
+        )
+        .value =
+        "";
+
+      currentSearch =
+        "";
+
+      renderMemories(
+        memories
+      );
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "searchInput"
+  )
+  .addEventListener(
+    "input",
+    () => {
+
+      search();
+
+    }
+  );
+
+
+function search(){
+
+  currentSearch =
+    document
+      .getElementById(
+        "searchInput"
+      )
+      .value
+      .trim()
+      .toLowerCase();
+
+
+  if(
+    !currentSearch
+  ){
+
+    renderMemories(
+      memories
+    );
+
+    return;
+
+  }
+
+
+  const result =
+    memories.filter(
+      memory => {
+
+        const author =
+          getAuthorName(
+            memory.id
+          );
+
+
+        const memoryComments =
+          getComments(
+            memory.id
+          );
+
+
+        const commentText =
+          memoryComments
+            .map(
+              comment =>
+                `
+                  ${comment.authorName || ""}
+                  ${comment.text || ""}
+                `
+            )
+            .join(" ");
+
+
+        const searchableText =
+          `
+
+            ${memory.song || ""}
+
+            ${memory.artist || ""}
+
+            ${memory.memo || ""}
+
+            ${author}
+
+            ${commentText}
+
+          `
+          .toLowerCase();
+
+
+        return searchableText
+          .includes(
+            currentSearch
+          );
+
+      }
+    );
+
+
+  renderMemories(
+    result
+  );
+
+}
+
+
+/* =====================================================
+   지도에서 보기
+===================================================== */
+
+document.addEventListener(
+  "click",
+  event => {
+
+    const button =
+      event.target.closest(
+        "[data-focus-id]"
+      );
+
+
+    if(!button){
+      return;
+    }
+
+
+    const memory =
+      memories.find(
+        item =>
+          item.id ===
+          button.dataset.focusId
+      );
+
+
+    if(!memory){
+      return;
+    }
+
+
+    const lat =
+      Number(
+        memory.lat
+      );
+
+
+    const lng =
+      Number(
+        memory.lng
+      );
+
+
+    if(
+      !Number.isFinite(lat) ||
+      !Number.isFinite(lng)
+    ){
+
+      alert(
+        "이 기억에는 올바른 위치 정보가 없습니다."
+      );
+
+      return;
+
+    }
+
+
+    adminMap.setView(
+      [
+        lat,
+        lng
+      ],
+      17,
+      {
+        animate:true
+      }
+    );
+
+
+    const marker =
+      mapMarkers[
+        memory.id
+      ];
+
+
+    if(marker){
+
+      setTimeout(
+        () => {
+
+          marker.openPopup();
+
+        },
+        300
+      );
+
+    }
+
+  }
+);
+
+
+/* =====================================================
+   기억 삭제
+===================================================== */
+
+document.addEventListener(
+  "click",
+  async event => {
+
+    const button =
+      event.target.closest(
+        "[data-delete-memory]"
+      );
+
+
+    if(!button){
+      return;
+    }
+
+
+    const memoryId =
+      button.dataset.deleteMemory;
+
+
+    const memory =
+      memories.find(
+        item =>
+          item.id ===
+          memoryId
+      );
+
+
+    if(!memory){
+      return;
+    }
+
+
+    const confirmed =
+      confirm(
+        `「${memory.song || "이 기억"}」을 삭제할까요?\n\n관련 댓글도 모두 삭제됩니다.`
+      );
+
+
+    if(!confirmed){
+      return;
+    }
+
+
+    button.disabled =
+      true;
+
+    button.textContent =
+      "삭제 중...";
+
+
+    try{
+
+      /* ---------------------------------------------
+         댓글 삭제
+      --------------------------------------------- */
+
+      const relatedComments =
+        getComments(
+          memoryId
+        );
+
+
+      for(
+        const comment
+        of relatedComments
+      ){
+
+        /*
+         * 실제 공개 댓글
+         *
+         * memories/{memoryId}/comments/{commentId}
+         */
+
+        if(
+          comment.commentId
+        ){
+
+          try{
+
+            await deleteDoc(
+              doc(
+                db,
+                "memories",
+                memoryId,
+                "comments",
+                comment.commentId
+              )
+            );
+
+          }
+          catch(
+            publicCommentError
+          ){
+
+            console.warn(
+              "공개 댓글 삭제 실패:",
+              publicCommentError
+            );
+
+          }
+
+        }
+
+
+        /* 관리자용 댓글 */
+
+        await deleteDoc(
+          doc(
+            db,
+            "commentPrivate",
+            comment.id
+          )
+        );
+
+      }
+
+
+      /* ---------------------------------------------
+         관리자용 작성자 정보 삭제
+      --------------------------------------------- */
+
+      const privateMemory =
+        privateMemories.find(
+          item =>
+            item.memoryId ===
+            memoryId
+        );
+
+
+      if(
+        privateMemory
+      ){
+
+        await deleteDoc(
+          doc(
+            db,
+            "memoryPrivate",
+            privateMemory.id
+          )
+        );
+
+      }
+
+
+      /* ---------------------------------------------
+         기억 삭제
+      --------------------------------------------- */
+
+      await deleteDoc(
+        doc(
+          db,
+          "memories",
+          memoryId
+        )
+      );
+
+
+      alert(
+        "기억이 삭제되었습니다."
+      );
+
+
+      await loadAll();
+
+
+    }
+    catch(error){
+
+      console.error(
+        "기억 삭제 오류:",
+        error
+      );
+
+
+      alert(
+        "삭제에 실패했습니다.\n\n" +
+        error.message
+      );
+
+
+      button.disabled =
+        false;
+
+      button.textContent =
+        "🗑 기억 삭제";
+
+    }
+
+  }
+);
+
+
+/* =====================================================
+   댓글 삭제
+===================================================== */
+
+document.addEventListener(
+  "click",
+  async event => {
+
+    const button =
+      event.target.closest(
+        "[data-delete-comment]"
+      );
+
+
+    if(!button){
+      return;
+    }
+
+
+    const privateCommentId =
+      button.dataset.deleteComment;
+
+
+    const memoryId =
+      button.dataset.memoryId;
+
+
+    const comment =
+      comments.find(
+        item =>
+          item.id ===
+          privateCommentId
+      );
+
+
+    const confirmed =
+      confirm(
+        "이 댓글을 삭제할까요?"
+      );
+
+
+    if(!confirmed){
+      return;
+    }
+
+
+    button.disabled =
+      true;
+
+    button.textContent =
+      "삭제 중...";
+
+
+    try{
+
+      /* ---------------------------------------------
+         공개 댓글 삭제
+      --------------------------------------------- */
+
+      if(
+        comment &&
+        comment.commentId
+      ){
+
+        await deleteDoc(
+          doc(
+            db,
+            "memories",
+            memoryId,
+            "comments",
+            comment.commentId
+          )
+        );
+
+      }
+
+
+      /* ---------------------------------------------
+         관리자용 댓글 삭제
+      --------------------------------------------- */
+
+      await deleteDoc(
+        doc(
+          db,
+          "commentPrivate",
+          privateCommentId
+        )
+      );
+
+
+      alert(
+        "댓글이 삭제되었습니다."
+      );
+
+
+      await loadAll();
+
+
+    }
+    catch(error){
+
+      console.error(
+        "댓글 삭제 오류:",
+        error
+      );
+
+
+      alert(
+        "댓글 삭제에 실패했습니다.\n\n" +
+        error.message
+      );
+
+
+      button.disabled =
+        false;
+
+      button.textContent =
+        "🗑 댓글 삭제";
+
+    }
+
+  }
+);
+
+
+/* =====================================================
+   HTML 안전 처리
+===================================================== */
+
+function escapeHTML(
+  value
+){
+
+  return String(
+    value ?? ""
+  )
+
+  .replace(
+    /&/g,
+    "&amp;"
+  )
+
+  .replace(
+    /</g,
+    "&lt;"
+  )
+
+  .replace(
+    />/g,
+    "&gt;"
+  )
+
+  .replace(
+    /"/g,
+    "&quot;"
+  )
+
+  .replace(
+    /'/g,
+    "&#039;"
+  );
+
+}
+
+
+function escapeAttribute(
+  value
+){
+
+  return String(
+    value ?? ""
+  )
+
+  .replace(
+    /&/g,
+    "&amp;"
+  )
+
+  .replace(
+    /"/g,
+    "&quot;"
+  )
+
+  .replace(
+    /</g,
+    "&lt;"
+  )
+
+  .replace(
+    />/g,
+    "&gt;"
+  );
+
+}
+
+</script>
+
+</body>
+
+</html>
